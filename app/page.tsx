@@ -6,6 +6,7 @@ import html2canvas from "html2canvas"; // Uncomment html2canvas
 import domtoimage from "dom-to-image-more"; // Re-import dom-to-image-more
 import GridDisplay from "@/components/GridDisplay";
 import useLocalStorageState from "@/hooks/useLocalStorageState"; // Import the hook
+import { exportDisplayedGrid } from "@/utils/imageExport";
 
 // Define types for images and layout
 type ImageItem = {
@@ -104,164 +105,40 @@ export default function Home() {
     );
   };
 
-  const handleExport = () => {
-    const gridElement = document.getElementById("grid-export-area");
-    if (!gridElement) {
-      console.error("Could not find grid element for export");
-      return;
-    }
-
-    // Temporarily remove padding
-    setHasPadding(false);
-
-    // Add a small delay before capturing
-    setTimeout(() => {
-      // First, pre-process any problematic CSS values
-      const allElements = document.querySelectorAll("*");
-      const styleSheets = Array.from(document.styleSheets);
-
-      // Function to process style rules and detect oklch
-      const processRules = (rules: CSSRuleList) => {
-        for (let i = 0; i < rules.length; i++) {
-          const rule = rules[i] as any;
-          if (rule.cssRules) {
-            // Process nested rules
-            processRules(rule.cssRules);
-          } else if (rule.style) {
-            // Check if the rule contains oklch
-            for (let j = 0; j < rule.style.length; j++) {
-              const prop = rule.style[j];
-              const value = rule.style.getPropertyValue(prop);
-              if (value.includes("oklch")) {
-                console.log(`Found oklch in CSS rule: ${rule.cssText}`);
-              }
-            }
-          }
-        }
-      };
-
-      // Try to scan stylesheets (may fail due to CORS)
-      try {
-        styleSheets.forEach((sheet) => {
-          try {
-            if (sheet.cssRules) {
-              processRules(sheet.cssRules);
-            }
-          } catch (e) {
-            console.log("Could not access stylesheet rules", e);
-          }
-        });
-      } catch (e) {
-        console.log("Error scanning stylesheets", e);
+  const handleExport = async () => {
+    try {
+      const gridElement = document.getElementById("grid-export-area");
+      if (!gridElement) {
+        throw new Error("Could not find grid element for export");
       }
 
-      // Use dom-to-image with defensive options
-      domtoimage
-        .toPng(gridElement, {
-          bgcolor: "#ffffff",
-          cacheBust: true,
-          quality: 0.98,
-          filter: (node: Element) => {
-            // Skip problematic nodes
-            return true;
-          },
-          style: {
-            // Override any problematic styles
-            padding: "0",
-          },
-        })
-        .then((dataUrl: string) => {
-          const link = document.createElement("a");
-          link.href = dataUrl;
-          link.download = `instagrid-${images.length}-images-${Date.now()}.png`;
-          document.body.appendChild(link);
-          link.click();
-          document.body.removeChild(link);
-          console.log("PNG download initiated");
-        })
-        .catch((err: Error) => {
-          console.error("Error during dom-to-image processing:", err);
+      // Temporarily remove padding for export
+      setHasPadding(false);
 
-          // If dom-to-image fails, fall back to a simple screenshot approach
-          console.log("Falling back to basic screenshot approach");
-          if (gridElement) {
-            try {
-              // Create canvas
-              const canvas = document.createElement("canvas");
-              const ctx = canvas.getContext("2d");
-              if (!ctx) throw new Error("Could not get 2D context");
+      // Wait for state update to take effect
+      await new Promise((resolve) => setTimeout(resolve, 100));
 
-              // Set dimensions
-              const width = gridElement.offsetWidth;
-              const height = gridElement.offsetHeight;
-              canvas.width = width;
-              canvas.height = height;
+      // Export the grid with 2x resolution scale
+      const blob = await exportDisplayedGrid(gridElement, 2);
 
-              // Draw white background
-              ctx.fillStyle = "#ffffff";
-              ctx.fillRect(0, 0, width, height);
+      // Create download link
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `instagrid-${images.length}-images-${Date.now()}.png`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
 
-              // Convert element to data URL
-              type ImageRect = {
-                img: HTMLImageElement;
-                left: number;
-                top: number;
-                width: number;
-                height: number;
-              };
-
-              const rects: ImageRect[] = [];
-              Array.from(gridElement.querySelectorAll("img")).forEach((img) => {
-                const rect = img.getBoundingClientRect();
-                const containerRect = gridElement.getBoundingClientRect();
-                rects.push({
-                  img: img as HTMLImageElement,
-                  left: rect.left - containerRect.left,
-                  top: rect.top - containerRect.top,
-                  width: rect.width,
-                  height: rect.height,
-                });
-              });
-
-              // Draw each image onto the canvas
-              const drawImages = async () => {
-                for (const rect of rects) {
-                  ctx.drawImage(
-                    rect.img,
-                    rect.left,
-                    rect.top,
-                    rect.width,
-                    rect.height
-                  );
-                }
-
-                // Export the canvas
-                try {
-                  const dataUrl = canvas.toDataURL("image/png");
-                  const link = document.createElement("a");
-                  link.href = dataUrl;
-                  link.download = `instagrid-${
-                    images.length
-                  }-images-${Date.now()}.png`;
-                  document.body.appendChild(link);
-                  link.click();
-                  document.body.removeChild(link);
-                } catch (e) {
-                  console.error("Failed to convert canvas to data URL:", e);
-                }
-              };
-
-              drawImages();
-            } catch (err) {
-              console.error("Fallback approach failed:", err);
-            }
-          }
-        })
-        .finally(() => {
-          // Restore padding
-          setHasPadding(true);
-        });
-    }, 100);
+      // Cleanup
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("Failed to export grid:", error);
+      // You might want to show an error message to the user here
+    } finally {
+      // Restore padding
+      setHasPadding(true);
+    }
   };
 
   // Handler to clear all images from the grid
