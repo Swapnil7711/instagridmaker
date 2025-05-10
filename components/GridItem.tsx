@@ -16,9 +16,15 @@ interface GridItemProps {
   image: ImageItem;
   imageFit: ObjectFit;
   onRemove: (id: string) => void;
+  style?: React.CSSProperties;
 }
 
-export default function GridItem({ image, imageFit, onRemove }: GridItemProps) {
+export default function GridItem({
+  image,
+  imageFit,
+  onRemove,
+  style = {},
+}: GridItemProps) {
   const {
     attributes,
     listeners,
@@ -30,19 +36,13 @@ export default function GridItem({ image, imageFit, onRemove }: GridItemProps) {
     id: image.id,
   });
 
-  const style = {
+  const itemStyle: React.CSSProperties = {
+    ...style,
     transform: CSS.Transform.toString(transform),
     transition,
-    zIndex: isDragging ? 100 : "auto", // Ensure dragging item is on top
-    opacity: isDragging ? 0.5 : 1, // Make dragging item slightly transparent
-    touchAction: "none", // Necessary for @dnd-kit interaction
-  };
-
-  // Add flex properties for sizing within the flex container
-  const itemStyle: React.CSSProperties = {
-    ...style, // Include transform/transition from useSortable
-    flex: "1 1 150px", // Grow, Shrink, Basis (adjust 150px as needed)
-    minWidth: "100px", // Prevent shrinking too small (optional, adjust as needed)
+    zIndex: isDragging ? 100 : "auto",
+    opacity: isDragging ? 0.5 : 1,
+    touchAction: "none",
   };
 
   return (
@@ -58,12 +58,11 @@ export default function GridItem({ image, imageFit, onRemove }: GridItemProps) {
         alt={`Grid image ${image.id}`}
         layout="fill"
         objectFit={imageFit}
-        className="pointer-events-none" // Prevent image drag interference
+        className="pointer-events-none"
       />
-      {/* Remove Button (visible on hover/focus) */}
       <button
         onClick={(e) => {
-          e.stopPropagation(); // Prevent drag start when clicking remove
+          e.stopPropagation();
           onRemove(image.id);
         }}
         className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 w-5 h-5 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity z-10"

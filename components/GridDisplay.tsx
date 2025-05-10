@@ -33,6 +33,7 @@ interface GridDisplayProps {
   onRemove: (id: string) => void;
   onPositionChange: (id: string, newPosition: { x: number; y: number }) => void;
   hasPadding?: boolean;
+  orientation?: "portrait" | "landscape";
 }
 
 export default function GridDisplay({
@@ -42,6 +43,7 @@ export default function GridDisplay({
   onRemove,
   onPositionChange,
   hasPadding = true,
+  orientation = "portrait",
 }: GridDisplayProps) {
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -65,19 +67,26 @@ export default function GridDisplay({
 
   const imageIds = images.map((img) => img.id);
 
-  // Define flexbox style dynamically for auto-flow
-  const flexContainerStyle: React.CSSProperties = {
+  // Define container style based on orientation
+  const containerStyle: React.CSSProperties = {
     display: "flex",
-    flexWrap: "wrap", // Allow items to wrap to the next line
-    gap: "4px", // Spacing between items
-    padding: hasPadding ? "4px" : "0", // Padding inside the container
+    flexWrap: "wrap",
+    gap: "4px",
+    padding: hasPadding ? "4px" : "0",
     border: "1px solid #d1d5db",
     borderRadius: "0.25rem",
     backgroundColor: "#e5e7eb",
     width: "100%",
-    maxWidth: "600px", // Restore max-width
     margin: "0 auto",
-    // Remove grid-specific styles
+    aspectRatio: orientation === "portrait" ? "4/5" : "5/4", // Set aspect ratio based on orientation
+    maxWidth: orientation === "portrait" ? "600px" : "750px", // Adjust max-width based on orientation
+  };
+
+  // Calculate item dimensions based on orientation and number of images
+  const itemStyle: React.CSSProperties = {
+    flex: orientation === "portrait" ? "1 1 32%" : "1 1 24%", // 3 columns for portrait, 4 for landscape
+    minWidth: orientation === "portrait" ? "32%" : "24%",
+    aspectRatio: "1",
   };
 
   return (
@@ -87,24 +96,16 @@ export default function GridDisplay({
       onDragEnd={handleDragEnd}
     >
       <SortableContext items={imageIds} strategy={rectSortingStrategy}>
-        <div
-          id="grid-export-area"
-          // Use flexbox style
-          style={flexContainerStyle}
-        >
+        <div id="grid-export-area" style={containerStyle}>
           {images.map((image) => (
-            // Apply flex properties to the GridItem wrapper if needed,
-            // but GridItem itself might handle sizing if given a basis.
-            // For now, GridItem has aspect-square, let's see how it behaves.
-            // We might need to wrap GridItem or apply flex styles directly.
             <GridItem
               key={image.id}
               image={image}
               imageFit={imageFit}
               onRemove={onRemove}
+              style={itemStyle}
             />
           ))}
-          {/* Placeholders are already removed */}
         </div>
       </SortableContext>
     </DndContext>

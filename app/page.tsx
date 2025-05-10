@@ -30,6 +30,9 @@ export default function Home() {
     "cover" // Default to cover
   );
   const [hasPadding, setHasPadding] = useState(true);
+  const [imageOrientation, setImageOrientation] = useState<
+    "portrait" | "landscape"
+  >("portrait");
 
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files) {
@@ -118,25 +121,36 @@ export default function Home() {
       // Wait for state update to take effect
       await new Promise((resolve) => setTimeout(resolve, 100));
 
-      // Export the grid with 2x resolution scale
-      const blob = await exportDisplayedGrid(gridElement, 2);
+      try {
+        // Export the grid with orientation and 2x resolution scale
+        const blob = await exportDisplayedGrid(
+          gridElement,
+          imageOrientation,
+          2
+        );
 
-      // Create download link
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = `instagrid-${images.length}-images-${Date.now()}.png`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+        // Create download link
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = `instagrid-${
+          images.length
+        }-images-${imageOrientation}-${Date.now()}.png`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
 
-      // Cleanup
-      URL.revokeObjectURL(url);
+        // Cleanup
+        URL.revokeObjectURL(url);
+      } catch (exportError) {
+        console.error("Failed to export grid:", exportError);
+        alert("Failed to export grid. Please try again.");
+      }
     } catch (error) {
-      console.error("Failed to export grid:", error);
-      // You might want to show an error message to the user here
+      console.error("Error during export setup:", error);
+      alert("Error preparing grid for export. Please try again.");
     } finally {
-      // Restore padding
+      // Always restore padding
       setHasPadding(true);
     }
   };
@@ -192,7 +206,7 @@ export default function Home() {
             </p>
           </div>
 
-          {/* Image Fit Selector */}
+          {/* Image Fit Selector
           <div>
             <label
               htmlFor="image-fit-select"
@@ -211,6 +225,27 @@ export default function Home() {
               <option value="fill">Fill (Stretch)</option>
               <option value="none">None (Original Size)</option>
               <option value="scale-down">Scale Down</option>
+            </select>
+          </div> */}
+
+          {/* add image portait/landscape toggle   */}
+          <div>
+            <label
+              htmlFor="image-orientation-select"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
+              Image Orientation
+            </label>
+            <select
+              id="image-orientation-select"
+              value={imageOrientation}
+              onChange={(e) =>
+                setImageOrientation(e.target.value as "portrait" | "landscape")
+              }
+              className="block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+            >
+              <option value="portrait">Portrait</option>
+              <option value="landscape">Landscape</option>
             </select>
           </div>
 
@@ -250,6 +285,7 @@ export default function Home() {
               onRemove={handleRemoveImage}
               onPositionChange={handleImagePositionChange}
               hasPadding={hasPadding}
+              orientation={imageOrientation}
             />
           ) : (
             <div className="flex-grow flex items-center justify-center bg-gray-200 border border-gray-300 rounded text-gray-500 p-8 text-center min-h-[300px]">

@@ -3,6 +3,7 @@
  */
 
 type ObjectFit = "cover" | "contain" | "fill" | "none" | "scale-down";
+type ImageOrientation = "portrait" | "landscape";
 
 /**
  * Load an image and handle CORS properly
@@ -62,43 +63,94 @@ export function getCoverCrop(
 }
 
 /**
+ * Calculate canvas dimensions based on orientation
+ */
+function getCanvasDimensions(
+  orientation: ImageOrientation,
+  displayWidth: number,
+  displayHeight: number
+): { width: number; height: number } {
+  // Instagram recommended dimensions
+  const INSTAGRAM_PORTRAIT = { width: 1080, height: 1350 }; // 4:5 ratio
+  const INSTAGRAM_LANDSCAPE = { width: 1350, height: 1080 }; // 5:4 ratio
+
+  const targetRatio =
+    orientation === "portrait"
+      ? INSTAGRAM_PORTRAIT.height / INSTAGRAM_PORTRAIT.width
+      : INSTAGRAM_LANDSCAPE.height / INSTAGRAM_LANDSCAPE.width;
+
+  // Calculate dimensions while maintaining the target ratio
+  let width: number;
+  let height: number;
+
+  const currentRatio = displayHeight / displayWidth;
+
+  if (orientation === "portrait") {
+    // For portrait, ensure height is 1.25x the width
+    width = Math.min(INSTAGRAM_PORTRAIT.width, displayWidth);
+    height = width * targetRatio;
+  } else {
+    // For landscape, ensure width is 1.25x the height
+    height = Math.min(INSTAGRAM_LANDSCAPE.height, displayHeight);
+    width = height / targetRatio;
+  }
+
+  return { width, height };
+}
+
+/**
  * Export the grid exactly as displayed on screen
  */
 export async function exportDisplayedGrid(
   gridElement: HTMLElement,
+  orientation: ImageOrientation = "portrait",
   scale: number = 2 // Scale factor for higher resolution
 ): Promise<Blob> {
-  // Get the exact dimensions of the grid
-  const rect = gridElement.getBoundingClientRect();
-  const displayWidth = rect.width;
-  const displayHeight = rect.height;
-
-  // Create a high-resolution canvas
-  const canvas = document.createElement("canvas");
-  const ctx = canvas.getContext("2d", {
-    alpha: true,
-    willReadFrequently: false,
-    desynchronized: true,
-  });
-
-  if (!ctx) throw new Error("Canvas 2D context not supported");
-
-  // Set canvas size to match display size * scale factor
-  canvas.width = displayWidth * scale;
-  canvas.height = displayHeight * scale;
-
-  // Scale the context to match the desired output size
-  ctx.scale(scale, scale);
-
-  // Fill background
-  ctx.fillStyle = "#FFFFFF";
-  ctx.fillRect(0, 0, displayWidth, displayHeight);
-
-  // Enable high-quality image rendering
-  ctx.imageSmoothingEnabled = true;
-  ctx.imageSmoothingQuality = "high";
+  // Save current scroll position
+  const originalScrollPosition = window.scrollY;
 
   try {
+    // Scroll the grid into view
+    gridElement.scrollIntoView({ behavior: "instant", block: "nearest" });
+
+    // Wait a bit for any scroll animations to complete
+    await new Promise((resolve) => setTimeout(resolve, 100));
+
+    // Get the exact dimensions and position of the grid
+    const rect = gridElement.getBoundingClientRect();
+    const { width: canvasWidth, height: canvasHeight } = getCanvasDimensions(
+      orientation,
+      rect.width,
+      rect.height
+    );
+
+    // Create a high-resolution canvas
+    const canvas = document.createElement("canvas");
+    const ctx = canvas.getContext("2d", {
+      alpha: true,
+      willReadFrequently: false,
+      desynchronized: true,
+    });
+
+    if (!ctx) throw new Error("Canvas 2D context not supported");
+
+    // Set canvas size to match target dimensions * scale factor
+    canvas.width = canvasWidth * scale;
+    canvas.height = canvasHeight * scale;
+
+    // Scale the context to match the desired output size
+    const scaleX = (canvasWidth * scale) / rect.width;
+    const scaleY = (canvasHeight * scale) / rect.height;
+    ctx.scale(scaleX, scaleY);
+
+    // Fill background
+    ctx.fillStyle = "#FFFFFF";
+    ctx.fillRect(0, 0, rect.width, rect.height);
+
+    // Enable high-quality image rendering
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = "high";
+
     // Get all images in the grid
     const images = Array.from(gridElement.querySelectorAll("img"));
     const gridRect = gridElement.getBoundingClientRect();
@@ -145,8 +197,12 @@ export async function exportDisplayedGrid(
         1.0 // Maximum quality
       );
     });
-  } catch (error) {
-    throw new Error(`Failed to export grid: ${error}`);
+  } finally {
+    // Restore the original scroll position
+    window.scrollTo({
+      top: originalScrollPosition,
+      behavior: "instant",
+    });
   }
 }
 
