@@ -31,7 +31,6 @@ interface GridDisplayProps {
   imageFit: ObjectFit;
   onReorder: (newImages: ImageItem[]) => void;
   onRemove: (id: string) => void;
-  onPositionChange: (id: string, newPosition: { x: number; y: number }) => void;
   hasPadding?: boolean;
   orientation?: "portrait" | "landscape";
 }
@@ -41,7 +40,6 @@ export default function GridDisplay({
   imageFit,
   onReorder,
   onRemove,
-  onPositionChange,
   hasPadding = true,
   orientation = "portrait",
 }: GridDisplayProps) {
@@ -78,8 +76,9 @@ export default function GridDisplay({
     backgroundColor: "#e5e7eb",
     width: "100%",
     margin: "0 auto",
-    aspectRatio: orientation === "portrait" ? "4/5" : "5/4", // Set aspect ratio based on orientation
-    maxWidth: orientation === "portrait" ? "600px" : "750px", // Adjust max-width based on orientation
+    height: orientation === "portrait" ? "800px" : "600px", // Fixed height for both modes
+    maxWidth: orientation === "portrait" ? "640px" : "750px", // Adjusted max-width to maintain proportions
+    aspectRatio: orientation === "portrait" ? "4/5" : "5/4", // Keep aspect ratio for reference
   };
 
   // Calculate item dimensions based on orientation and number of images

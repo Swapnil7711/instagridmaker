@@ -1,12 +1,10 @@
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
-import html2canvas from "html2canvas"; // Uncomment html2canvas
-// @ts-ignore // Suppress type error for dom-to-image-more
-import domtoimage from "dom-to-image-more"; // Re-import dom-to-image-more
+import { useState } from "react";
 import GridDisplay from "@/components/GridDisplay";
 import useLocalStorageState from "@/hooks/useLocalStorageState"; // Import the hook
 import { exportDisplayedGrid } from "@/utils/imageExport";
+import ShootAIAd from "@/components/ShootAIAd";
 
 // Define types for images and layout
 type ImageItem = {
@@ -25,7 +23,7 @@ export default function Home() {
     []
   );
   // Add state for image fit style
-  const [imageFit, setImageFit] = useLocalStorageState<ObjectFit>(
+  const [imageFit] = useLocalStorageState<ObjectFit>(
     "instagrid-image-fit",
     "cover" // Default to cover
   );
@@ -97,16 +95,16 @@ export default function Home() {
   };
 
   // Handler for updating a specific image's position
-  const handleImagePositionChange = (
-    id: string,
-    newPosition: { x: number; y: number }
-  ) => {
-    setImages((prevImages) =>
-      prevImages.map((img) =>
-        img.id === id ? { ...img, position: newPosition } : img
-      )
-    );
-  };
+  // const _handleImagePositionChange = (
+  //   id: string,
+  //   newPosition: { x: number; y: number }
+  // ) => {
+  //   setImages((prevImages) =>
+  //     prevImages.map((img) =>
+  //       img.id === id ? { ...img, position: newPosition } : img
+  //     )
+  //   );
+  // };
 
   const handleExport = async () => {
     try {
@@ -170,9 +168,9 @@ export default function Home() {
   };
 
   return (
-    <main className="flex min-h-screen flex-col items-center p-4 md:p-12 lg:p-24 bg-gray-50">
-      <header className="w-full max-w-5xl mb-8">
-        <h1 className="text-3xl font-bold text-center text-gray-800 mb-2">
+    <main className="flex min-h-screen flex-col items-center p-2 md:p-4 bg-gray-50">
+      <header className="w-full max-w-7xl mb-4">
+        <h1 className="text-3xl font-bold text-center text-gray-800 mb-1">
           InstaGridMaker
         </h1>
         <p className="text-center text-gray-600">
@@ -180,9 +178,9 @@ export default function Home() {
         </p>
       </header>
 
-      <div className="w-full max-w-5xl flex flex-col md:flex-row gap-8">
+      <div className="w-full max-w-7xl flex flex-col lg:flex-row gap-4">
         {/* Controls Section */}
-        <section className="md:w-1/4 flex flex-col gap-4 order-2 md:order-1">
+        <section className="lg:w-1/4 flex flex-col gap-4 order-2 lg:order-1">
           <h2 className="text-xl font-semibold text-gray-700">Controls</h2>
 
           {/* Photo Uploader Placeholder */}
@@ -202,33 +200,11 @@ export default function Home() {
               className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
             />
             <p className="mt-1 text-xs text-gray-500">
-              Select up to {images.length} images.
+              Select multiple images to add to your grid.
             </p>
           </div>
 
-          {/* Image Fit Selector
-          <div>
-            <label
-              htmlFor="image-fit-select"
-              className="block text-sm font-medium text-gray-700 mb-1"
-            >
-              Image Fit
-            </label>
-            <select
-              id="image-fit-select"
-              value={imageFit}
-              onChange={(e) => setImageFit(e.target.value as ObjectFit)}
-              className="block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-            >
-              <option value="cover">Cover (Fill & Crop)</option>
-              <option value="contain">Contain (Fit & Letterbox)</option>
-              <option value="fill">Fill (Stretch)</option>
-              <option value="none">None (Original Size)</option>
-              <option value="scale-down">Scale Down</option>
-            </select>
-          </div> */}
-
-          {/* add image portait/landscape toggle   */}
+          {/* Image Orientation Selector */}
           <div>
             <label
               htmlFor="image-orientation-select"
@@ -249,7 +225,7 @@ export default function Home() {
             </select>
           </div>
 
-          {/* Export Button Placeholder */}
+          {/* Export Button */}
           <button
             onClick={handleExport}
             className="mt-4 w-full bg-green-600 text-white py-2 px-4 rounded hover:bg-green-700"
@@ -260,21 +236,16 @@ export default function Home() {
           {/* Clear Grid Button */}
           <button
             onClick={handleClearGrid}
-            disabled={images.length === 0} // Disable if no images
+            disabled={images.length === 0}
             className="mt-2 w-full bg-red-600 text-white py-2 px-4 rounded hover:bg-red-700 disabled:bg-red-300 disabled:cursor-not-allowed"
           >
             Clear Grid
           </button>
-
-          {/* TODO: Add Clear Grid Button */}
         </section>
 
         {/* Grid Display Area */}
-        <section
-          id="grid-container"
-          className="flex-1 order-1 md:order-2 min-w-0 flex flex-col"
-        >
-          <h2 className="text-xl font-semibold text-gray-700 mb-4 text-center md:text-left">
+        <section className="flex-1 order-1 lg:order-2 min-w-0">
+          <h2 className="text-xl font-semibold text-gray-700 mb-4 text-center lg:text-left">
             Grid Preview
           </h2>
           {images.length > 0 ? (
@@ -283,7 +254,6 @@ export default function Home() {
               imageFit={imageFit}
               onReorder={handleReorder}
               onRemove={handleRemoveImage}
-              onPositionChange={handleImagePositionChange}
               hasPadding={hasPadding}
               orientation={imageOrientation}
             />
@@ -293,9 +263,12 @@ export default function Home() {
             </div>
           )}
         </section>
-      </div>
 
-      {/* TODO: Add Uploaded Images Preview/Bank */}
+        {/* Ad Section */}
+        <section className="lg:w-1/4 order-3">
+          <ShootAIAd />
+        </section>
+      </div>
     </main>
   );
 }
