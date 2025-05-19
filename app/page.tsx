@@ -169,19 +169,21 @@ export default function Home() {
 
   return (
     <main className="flex min-h-screen flex-col items-center p-2 md:p-4 bg-gray-50">
-      <header className="w-full max-w-7xl mb-4">
-        <h1 className="text-3xl font-bold text-center text-gray-800 mb-1">
+      <header className="w-full max-w-7xl mb-4 px-2 md:px-0">
+        <h1 className="text-2xl md:text-3xl font-bold text-center text-gray-800 mb-1">
           InstaGridMaker
         </h1>
-        <p className="text-center text-gray-600">
+        <p className="text-center text-sm md:text-base text-gray-600">
           Plan your Instagram grid layout visually.
         </p>
       </header>
 
-      <div className="w-full max-w-7xl flex flex-col lg:flex-row gap-4">
+      <div className="w-full max-w-7xl flex flex-col lg:flex-row gap-4 px-2 md:px-0">
         {/* Controls Section */}
-        <section className="lg:w-1/4 flex flex-col gap-4 order-2 lg:order-1">
-          <h2 className="text-xl font-semibold text-gray-700">Controls</h2>
+        <section className="lg:w-1/4 flex flex-col gap-4 order-2 lg:order-1 bg-white p-4 rounded-lg shadow lg:sticky lg:top-4 lg:self-start">
+          <h2 className="text-lg md:text-xl font-semibold text-gray-700">
+            Controls
+          </h2>
 
           {/* Photo Uploader Placeholder */}
           <div>
@@ -197,7 +199,7 @@ export default function Home() {
               accept="image/*"
               multiple
               onChange={handleImageUpload}
-              className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+              className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer"
             />
             <p className="mt-1 text-xs text-gray-500">
               Select multiple images to add to your grid.
@@ -218,7 +220,7 @@ export default function Home() {
               onChange={(e) =>
                 setImageOrientation(e.target.value as "portrait" | "landscape")
               }
-              className="block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+              className="block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm md:text-sm"
             >
               <option value="portrait">Portrait</option>
               <option value="landscape">Landscape</option>
@@ -228,7 +230,7 @@ export default function Home() {
           {/* Export Button */}
           <button
             onClick={handleExport}
-            className="mt-4 w-full bg-green-600 text-white py-2 px-4 rounded hover:bg-green-700"
+            className="mt-4 w-full bg-green-600 text-white py-2 px-4 rounded hover:bg-green-700 text-sm md:text-base"
           >
             Export Grid (PNG)
           </button>
@@ -237,7 +239,7 @@ export default function Home() {
           <button
             onClick={handleClearGrid}
             disabled={images.length === 0}
-            className="mt-2 w-full bg-red-600 text-white py-2 px-4 rounded hover:bg-red-700 disabled:bg-red-300 disabled:cursor-not-allowed"
+            className="mt-2 w-full bg-red-600 text-white py-2 px-4 rounded hover:bg-red-700 disabled:bg-red-300 disabled:cursor-not-allowed text-sm md:text-base"
           >
             Clear Grid
           </button>
@@ -245,7 +247,7 @@ export default function Home() {
 
         {/* Grid Display Area */}
         <section className="flex-1 order-1 lg:order-2 min-w-0">
-          <h2 className="text-xl font-semibold text-gray-700 mb-4 text-center lg:text-left">
+          <h2 className="text-lg md:text-xl font-semibold text-gray-700 mb-4 text-center lg:text-left">
             Grid Preview
           </h2>
           {images.length > 0 ? (
@@ -258,14 +260,14 @@ export default function Home() {
               orientation={imageOrientation}
             />
           ) : (
-            <div className="flex-grow flex items-center justify-center bg-gray-200 border border-gray-300 rounded text-gray-500 p-8 text-center min-h-[300px]">
+            <div className="flex-grow flex items-center justify-center bg-gray-200 border border-gray-300 rounded text-gray-500 p-4 md:p-8 text-center min-h-[200px] md:min-h-[300px]">
               Upload images using the controls to start building your grid.
             </div>
           )}
         </section>
 
         {/* Ad Section */}
-        <section className="lg:w-1/4 order-3">
+        <section className="lg:w-1/4 order-3 lg:sticky lg:top-4 lg:self-start">
           <ShootAIAd />
         </section>
       </div>

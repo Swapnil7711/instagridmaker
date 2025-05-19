@@ -1,9 +1,9 @@
-import React from "react";
+import Image from "next/image";
 
 const ShootAIAd = () => {
   return (
-    <div className="absolute top-0 right-0 w-[300px] h-screen bg-[#1A1B23] p-6 overflow-y-auto">
-      <div className="flex flex-col h-full space-y-6">
+    <div className="  lg:fixed lg:right-0 lg:top-0 lg:w-[350px] h-screen bg-[#1A1B23] p-2 overflow-y-auto">
+      <div className="flex flex-col h-full space-y-4">
         {/* Header */}
         <div className="text-center">
           <h3 className="text-2xl font-bold bg-gradient-to-r from-[#FF6B6B] via-[#FF5F50] to-[#3BCCE1] bg-clip-text text-transparent">
@@ -12,39 +12,16 @@ const ShootAIAd = () => {
           <p className="text-gray-400 mt-2">AI-Powered Photo Generation</p>
         </div>
 
-        {/* 2 Easy Steps */}
-        <div className="space-y-4">
-          {/* Step 1 */}
-          <div className="bg-[#0B0B14] rounded-xl p-4">
-            <div className="flex items-center gap-3 mb-2">
-              <div className="bg-[#00BCD4] text-white w-8 h-8 rounded-full flex items-center justify-center font-bold">
-                1
-              </div>
-              <h5 className="text-white font-semibold">Upload Photos</h5>
-            </div>
-            <p className="text-gray-400 text-sm">
-              Upload your photos to build an AI model that captures your look
-              and features.
-            </p>
-          </div>
-
-          {/* Step 2 */}
-          <div className="bg-[#0B0B14] rounded-xl p-4">
-            <div className="flex items-center gap-3 mb-2">
-              <div className="bg-[#00BCD4] text-white w-8 h-8 rounded-full flex items-center justify-center font-bold">
-                2
-              </div>
-              <h5 className="text-white font-semibold">Generate Photos</h5>
-            </div>
-            <p className="text-gray-400 text-sm">
-              Use text prompts (or pick a theme) to create AI photos from the
-              trained model.
-            </p>
-          </div>
-        </div>
-
         {/* Features */}
-        <div className="flex-grow space-y-6">
+        <div className="flex-grow space-y-2 p-2">
+          {/* add image.png here */}
+          <Image
+            src="/image.png"
+            alt="ShootAIPhoto"
+            width={350}
+            height={300}
+            className="-pt-4"
+          />
           {/* Feature 1 */}
           <div className="bg-[#0B0B14] rounded-xl p-4">
             <div className="flex items-center gap-3">
@@ -69,7 +46,8 @@ const ShootAIAd = () => {
             </p>
           </div>
 
-          {/* <div className="bg-[#0B0B14] rounded-xl p-4">
+          {/* Feature 2 */}
+          <div className="bg-[#0B0B14] rounded-xl p-4">
             <div className="flex items-center gap-3">
               <div className="text-[#FF4081]">
                 <svg
@@ -90,6 +68,7 @@ const ShootAIAd = () => {
             </p>
           </div>
 
+          {/* Feature 3 */}
           <div className="bg-[#0B0B14] rounded-xl p-4">
             <div className="flex items-center gap-3">
               <div className="text-[#FFB300]">
@@ -110,7 +89,7 @@ const ShootAIAd = () => {
               Build a diverse modeling portfolio with different styles and
               settings.
             </p>
-          </div> */}
+          </div>
         </div>
 
         {/* CTA */}
